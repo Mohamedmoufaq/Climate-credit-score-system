@@ -1,0 +1,30 @@
+<svg width="760" height="560" viewBox="0 0 760 560" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0F3B66"/>
+      <stop offset="100%" stop-color="#0A5A74"/>
+    </linearGradient>
+    <linearGradient id="bank" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#DCE7F1"/>
+    </linearGradient>
+  </defs>
+  <rect width="760" height="560" rx="26" fill="url(#bg)"/>
+  <circle cx="560" cy="170" r="105" stroke="#9AD9FF" stroke-width="6" fill="none"/>
+  <ellipse cx="560" cy="170" rx="95" ry="35" stroke="#9AD9FF" stroke-width="4" fill="none"/>
+  <ellipse cx="560" cy="170" rx="45" ry="100" stroke="#9AD9FF" stroke-width="4" fill="none"/>
+  <line x1="455" y1="170" x2="665" y2="170" stroke="#9AD9FF" stroke-width="4"/>
+  <line x1="560" y1="65" x2="560" y2="275" stroke="#9AD9FF" stroke-width="4"/>
+
+  <path d="M110 360H370L330 320H150L110 360Z" fill="url(#bank)"/>
+  <rect x="130" y="360" width="220" height="130" rx="10" fill="url(#bank)"/>
+  <rect x="165" y="390" width="28" height="90" rx="5" fill="#0F3B66"/>
+  <rect x="225" y="390" width="28" height="90" rx="5" fill="#0F3B66"/>
+  <rect x="285" y="390" width="28" height="90" rx="5" fill="#0F3B66"/>
+  <rect x="110" y="500" width="260" height="16" rx="8" fill="#84CCFF"/>
+
+  <path d="M500 330L540 370L620 280" stroke="#8BFFB0" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <text x="110" y="90" fill="#EAF3FB" font-size="34" font-family="Segoe UI, Arial" font-weight="700">Secure Banking Network</text>
+  <text x="110" y="130" fill="#B7D5EA" font-size="22" font-family="Segoe UI, Arial">Climate intelligence + credit governance</text>
+</svg>

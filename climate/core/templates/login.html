@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Risk Credit Login</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+<body>
+<div class="auth-shell">
+    <div class="auth-visual">
+        <img src="{% static 'core/bank_globe.svg' %}" alt="Secure Bank Climate System">
+        <h3>Secure Bank Climate Credit Network</h3>
+        <p>AI-assisted credit intelligence with climate-aware governance.</p>
+    </div>
+
+    <div class="card">
+        <h2>Climate Risk Credit System</h2>
+        <p class="muted">Secure login for bank officers, managers, and auditors.</p>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <button type="submit">Secure Login</button>
+        </form>
+        <p class="muted">Need quick testing? <a class="link" href="{% url 'demo_access' %}">Authorized demo access</a> (manager).</p>
+        <p class="muted">No account? <a class="link" href="{% url 'register' %}">Register here</a></p>
+    </div>
+</div>
+</body>
+</html>

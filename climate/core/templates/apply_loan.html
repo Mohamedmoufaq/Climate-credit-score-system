@@ -1,0 +1,242 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Climate Credit Application</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+<body>
+<div class="container">
+    <div class="topbar">
+        <h2>Loan Application Creation</h2>
+        <a class="btn" href="{% url 'dashboard' %}">Dashboard</a>
+    </div>
+
+    <div class="panel">
+        <h3>Borrower, Property and Loan Details</h3>
+        <p class="muted">Select state first. At least 5 cities for each state are auto-loaded. Latitude/Longitude auto-fill for selected city.</p>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <form method="POST" class="grid-form" id="loanForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Borrower Name</label>
+                <input type="text" name="borrower_name" required>
+            </div>
+
+            <div class="form-group">
+                <label>ID Type</label>
+                <select name="id_type" required>
+                    <option value="aadhaar">Aadhaar</option>
+                    <option value="pan">PAN</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Aadhaar / PAN</label>
+                <input type="text" name="borrower_id" placeholder="Aadhaar: 12 digits or PAN: AAAAA9999A" required>
+            </div>
+
+            <div class="form-group">
+                <label>State</label>
+                <select name="location_state" id="stateSelect" required>
+                    <option value="">Select state</option>
+                    {% for state in states %}
+                        <option value="{{ state }}">{{ state }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>City</label>
+                <select name="location_city" id="citySelect" required>
+                    <option value="">Select city</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Custom City (optional if city not listed)</label>
+                <input type="text" name="custom_city" id="customCity" placeholder="Enter custom city">
+            </div>
+
+            <div class="form-group">
+                <label>Latitude</label>
+                <input type="number" step="0.0001" name="latitude" id="latitude" required>
+            </div>
+
+            <div class="form-group">
+                <label>Longitude</label>
+                <input type="number" step="0.0001" name="longitude" id="longitude" required>
+            </div>
+
+            <div class="form-group">
+                <label>Property Type</label>
+                <select name="property_type" id="propertyType" required>
+                    <option value="House">House</option>
+                    <option value="Apartment">Apartment</option>
+                    <option value="Farm">Farm</option>
+                    <option value="Commercial">Commercial</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Property Value (INR)</label>
+                <input type="number" step="0.01" name="property_value" id="propertyValue" required>
+            </div>
+
+            <div class="form-group">
+                <label>Income (INR)</label>
+                <input type="number" step="0.01" name="income" id="income" required>
+            </div>
+
+            <div class="form-group">
+                <label>Base Credit Score</label>
+                <input type="number" min="300" max="900" name="credit_score" id="creditScore" required>
+            </div>
+
+            <div class="form-group">
+                <label>Loan Amount (INR)</label>
+                <input type="number" step="0.01" name="loan_amount" id="loanAmount" required>
+            </div>
+
+            <div class="form-group">
+                <label>Requested Tenure (months)</label>
+                <input type="number" min="12" max="120" name="tenure_months" id="tenureMonths" required>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label><input type="checkbox" name="save_location"> Save custom city to location catalog</label>
+            </div>
+
+            <div class="form-actions row-inline">
+                <button type="button" id="previewDecision" class="small-btn">Preview Real-Time Decision</button>
+                <button type="submit">Run AI Climate Credit Decision</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="panel" id="previewPanel" style="display:none;">
+        <h3>Real-Time Decision Engine Preview</h3>
+        <div class="preview-grid">
+            <div><strong>Climate Score</strong><br><span id="pClimate">-</span></div>
+            <div><strong>Climate Level</strong><br><span id="pLevel">-</span></div>
+            <div><strong>Default Probability</strong><br><span id="pDefault">-</span></div>
+            <div><strong>AI Credit Score</strong><br><span id="pAiCredit">-</span></div>
+            <div><strong>ESG Score</strong><br><span id="pEsg">-</span></div>
+            <div><strong>ESG Credit Score</strong><br><span id="pEsgCredit">-</span></div>
+            <div><strong>Risk Rate</strong><br><span id="pRate">-</span></div>
+            <div><strong>Collateral</strong><br><span id="pCollateral">-</span></div>
+            <div><strong>Suggested Tenure</strong><br><span id="pTenure">-</span></div>
+            <div><strong>Decision</strong><br><span id="pDecision">-</span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const locationLookup = {{ location_lookup|safe }};
+const stateSelect = document.getElementById('stateSelect');
+const citySelect = document.getElementById('citySelect');
+const latitudeInput = document.getElementById('latitude');
+const longitudeInput = document.getElementById('longitude');
+const customCity = document.getElementById('customCity');
+
+function fillCitiesForState(state) {
+    citySelect.innerHTML = '<option value="">Select city</option>';
+    const cities = locationLookup[state] || [];
+    cities.forEach((city) => {
+        const option = document.createElement('option');
+        option.value = city.name;
+        option.textContent = city.name;
+        option.dataset.lat = city.lat;
+        option.dataset.lon = city.lon;
+        citySelect.appendChild(option);
+    });
+}
+
+stateSelect.addEventListener('change', () => {
+    fillCitiesForState(stateSelect.value);
+    latitudeInput.value = '';
+    longitudeInput.value = '';
+});
+
+citySelect.addEventListener('change', () => {
+    const selected = citySelect.options[citySelect.selectedIndex];
+    if (!selected || !selected.dataset.lat) {
+        return;
+    }
+    latitudeInput.value = Number(selected.dataset.lat).toFixed(4);
+    longitudeInput.value = Number(selected.dataset.lon).toFixed(4);
+    if (customCity.value.trim()) {
+        customCity.value = '';
+    }
+});
+
+customCity.addEventListener('input', () => {
+    if (customCity.value.trim()) {
+        citySelect.value = '';
+    }
+});
+
+function getCsrfToken() {
+    const name = 'csrftoken=';
+    const parts = document.cookie.split(';');
+    for (let i = 0; i < parts.length; i += 1) {
+        const value = parts[i].trim();
+        if (value.startsWith(name)) {
+            return value.substring(name.length);
+        }
+    }
+    return '';
+}
+
+document.getElementById('previewDecision').addEventListener('click', async () => {
+    const payload = {
+        income: Number(document.getElementById('income').value || 0),
+        credit_score: Number(document.getElementById('creditScore').value || 0),
+        loan_amount: Number(document.getElementById('loanAmount').value || 0),
+        property_value: Number(document.getElementById('propertyValue').value || 0),
+        tenure_months: Number(document.getElementById('tenureMonths').value || 0),
+        property_type: document.getElementById('propertyType').value,
+        lat: Number(latitudeInput.value || 0),
+        lon: Number(longitudeInput.value || 0),
+    };
+
+    const response = await fetch('/api/realtime-decision/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+        return;
+    }
+
+    const data = await response.json();
+    document.getElementById('previewPanel').style.display = 'block';
+    document.getElementById('pClimate').textContent = data.climate_score;
+    document.getElementById('pLevel').textContent = data.climate_level;
+    document.getElementById('pDefault').textContent = `${data.default_probability}%`;
+    document.getElementById('pAiCredit').textContent = data.ai_credit_score;
+    document.getElementById('pEsg').textContent = data.esg_score;
+    document.getElementById('pEsgCredit').textContent = data.esg_credit_score;
+    document.getElementById('pRate').textContent = `${data.interest_rate}%`;
+    document.getElementById('pCollateral').textContent = `${data.collateral_ratio}%`;
+    document.getElementById('pTenure').textContent = `${data.suggested_tenure} months`;
+
+    const decisionElement = document.getElementById('pDecision');
+    decisionElement.textContent = data.decision;
+    decisionElement.className = '';
+    if (data.decision === 'Reject') {
+        decisionElement.classList.add('danger-text');
+    }
+});
+</script>
+</body>
+</html>

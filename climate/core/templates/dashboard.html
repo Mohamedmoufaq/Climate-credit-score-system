@@ -1,0 +1,200 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Climate Credit Dashboard</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+</head>
+<body>
+<div class="container">
+    <div class="topbar topbar-highlight">
+        <div>
+            <h2>Executive Dashboard</h2>
+            <p class="muted">AI-driven climate + borrower + property underwriting cockpit</p>
+        </div>
+        {% if role != 'auditor' %}
+            <a class="btn" href="{% url 'apply' %}">New Application</a>
+        {% endif %}
+    </div>
+
+    <div class="panel">
+        <h3>8 Strategic Advantages Implemented</h3>
+        <div class="adv-grid">
+            {% for item in advantages %}
+                <div class="adv-item">{{ item }}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="panel role-panel">
+        <h3>Role Validation</h3>
+        <p class="muted">Active role: <strong>{{ role|title }}</strong></p>
+    </div>
+
+    <div class="panel kpi-grid">
+        <div class="kpi-box"><h4>Total Applications</h4><p>{{ kpis.total }}</p></div>
+        <div class="kpi-box"><h4>Avg Climate Score</h4><p>{{ kpis.avg_risk }}</p></div>
+        <div class="kpi-box"><h4>Avg ESG Score</h4><p>{{ kpis.avg_esg }}</p></div>
+        <div class="kpi-box"><h4>Avg Default Probability</h4><p>{{ kpis.avg_default }}%</p></div>
+        <div class="kpi-box"><h4>Avg Risk Rate</h4><p>{{ kpis.avg_interest }}%</p></div>
+        <div class="kpi-box"><h4>Avg AI Credit</h4><p>{{ kpis.avg_ai_credit }}</p></div>
+        <div class="kpi-box"><h4>Avg ESG Credit</h4><p>{{ kpis.avg_esg_credit }}</p></div>
+        <div class="kpi-box"><h4>Rejected (Policy)</h4><p>{{ kpis.rejected }}</p></div>
+        <div class="kpi-box"><h4>Early Warnings</h4><p>{{ kpis.warnings }}</p></div>
+    </div>
+
+    <div class="panel">
+        <h3>Early Warning Alerts</h3>
+        {% if warning_alerts %}
+            <table>
+                <tr><th>Borrower</th><th>Location</th><th>Default %</th><th>Climate Score</th><th>Alert</th></tr>
+                {% for item in warning_alerts %}
+                    <tr>
+                        <td>{{ item.borrower_name }}</td>
+                        <td>{{ item.location_district }}, {{ item.location_state }}</td>
+                        <td>{{ item.default_probability }}%</td>
+                        <td>{{ item.climate_risk_score }}</td>
+                        <td><span class="status-badge status-reject">{{ item.early_warning_message }}</span></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p class="muted">No early warning alerts currently.</p>
+        {% endif %}
+    </div>
+
+    <div class="panel">
+        <h3>High-Risk Flags</h3>
+        {% if severe_flags %}
+            <table>
+                <tr><th>Borrower</th><th>Location</th><th>Climate Class</th><th>Decision</th></tr>
+                {% for item in severe_flags %}
+                    <tr>
+                        <td>{{ item.borrower_name }}</td>
+                        <td>{{ item.location_district }}, {{ item.location_state }}</td>
+                        <td>{{ item.climate_risk_score }} ({{ item.climate_risk_classification }})</td>
+                        <td><span class="status-badge status-reject">{{ item.final_decision }}</span></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p class="muted">No high-risk flags currently.</p>
+        {% endif %}
+    </div>
+
+    <div class="panel">
+        <h3>Geospatial Risk Visualization</h3>
+        <div id="riskMap" class="map"></div>
+    </div>
+
+    <div class="panel">
+        <h3>Complete Financial, AI and ESG Details</h3>
+        <table>
+            <tr>
+                <th>Borrower</th>
+                <th>Location</th>
+                <th>Property</th>
+                <th>Property Risk</th>
+                <th>Income</th>
+                <th>Loan</th>
+                <th>Base Credit</th>
+                <th>AI Credit</th>
+                <th>ESG Credit</th>
+                <th>Climate Score</th>
+                <th>ESG Score</th>
+                <th>Risk Rate</th>
+                <th>Default %</th>
+                <th>Collateral %</th>
+                <th>Tenure</th>
+                <th>ESG Lending Support</th>
+                <th>AI Model</th>
+                <th>Confidence</th>
+                <th>Decision</th>
+                <th>Rationale</th>
+                {% if role == 'manager' %}<th>Manual Override</th>{% endif %}
+            </tr>
+            {% for app in applications %}
+                <tr>
+                    <td>{{ app.borrower_name }}</td>
+                    <td>{{ app.location_district }}, {{ app.location_state }}</td>
+                    <td>{{ app.property_type }} / {{ app.property_value }}</td>
+                    <td>{{ app.property_risk_score }}</td>
+                    <td>{{ app.income }}</td>
+                    <td>{{ app.loan_amount }}</td>
+                    <td>{{ app.base_credit_score }}</td>
+                    <td>{{ app.ai_credit_score }}</td>
+                    <td>{{ app.esg_aligned_credit_score }}</td>
+                    <td>{{ app.climate_risk_score }} ({{ app.climate_risk_classification }})</td>
+                    <td>{{ app.esg_risk_score }}</td>
+                    <td>{{ app.suggested_interest_rate }}%</td>
+                    <td>{{ app.default_probability }}%</td>
+                    <td>{{ app.suggested_collateral_ratio }}%</td>
+                    <td>{{ app.suggested_tenure_months }}m</td>
+                    <td>{{ app.esg_lending_recommendation }}</td>
+                    <td>{{ app.model_algorithm }}</td>
+                    <td>{{ app.model_confidence }}%</td>
+                    <td>
+                        {% if app.final_decision == 'Reject' %}
+                            <span class="status-badge status-reject">{{ app.final_decision }}</span>
+                        {% elif app.final_decision == 'Auto Approve' %}
+                            <span class="status-badge status-approve">{{ app.final_decision }}</span>
+                        {% else %}
+                            <span class="status-badge status-conditional">{{ app.final_decision }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ app.decision_rationale }}</td>
+                    {% if role == 'manager' %}
+                    <td>
+                        <form method="POST" action="{% url 'override_decision' app.id %}">
+                            {% csrf_token %}
+                            <select name="override_decision" required>
+                                <option value="Auto Approve">Auto Approve</option>
+                                <option value="Conditional Approve">Conditional Approve</option>
+                                <option value="Reject">Reject</option>
+                            </select>
+                            <button type="submit" class="small-btn">Apply</button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+            {% empty %}
+                <tr><td colspan="21">No applications yet.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+const mapPoints = {{ map_points|safe }};
+const map = L.map('riskMap').setView([22.5, 79.0], 4);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+function markerColor(risk) {
+    if (risk >= 75) return '#b91c1c';
+    if (risk >= 50) return '#d97706';
+    if (risk >= 25) return '#2563eb';
+    return '#15803d';
+}
+
+mapPoints.forEach((point) => {
+    const color = markerColor(point.risk);
+    const marker = L.circleMarker([point.lat, point.lon], {
+        radius: 8,
+        color,
+        fillColor: color,
+        fillOpacity: 0.72
+    }).addTo(map);
+
+    marker.bindPopup(`${point.district}<br>Risk: ${point.risk}<br>ESG: ${point.esg}<br>Decision: ${point.decision}`);
+});
+</script>
+</body>
+</html>

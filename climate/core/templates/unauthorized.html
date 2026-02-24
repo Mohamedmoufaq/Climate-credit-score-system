@@ -1,0 +1,20 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unauthorized Access</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+<body>
+<div class="page">
+    <div class="card">
+        <h2>Unauthorized Access Alert</h2>
+        <p class="error">Access denied for this role or account.</p>
+        <p class="muted">Please contact system administrator or sign in with an authorized user.</p>
+        <a class="btn" href="{% url 'login' %}">Back to Login</a>
+    </div>
+</div>
+</body>
+</html>
