@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: climate-credit
+    runtime: python
+    plan: free
+    
+    buildCommand: |
+      pip install -r requirements.txt && \
+      python manage.py migrate && \
+      python manage.py collectstatic --noinput
+    
+    startCommand: gunicorn climate_credit.wsgi:application --bind 0.0.0.0:$PORT
+    
+    envVars:
+      - key: SECRET_KEY
+        scope: project
+        value: change-this-to-a-secure-random-key-in-render-dashboard
+      
+      - key: DEBUG
+        value: "False"
+      
+      - key: DATABASE_URL
+        scope: project
+        value: sqlite:///db.sqlite3
+    
+    routes:
+      - path: /
+        matchType: prefix
