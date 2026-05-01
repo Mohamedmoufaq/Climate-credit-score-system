@@ -79,7 +79,15 @@
                         <td>{{ item.borrower_name }}</td>
                         <td>{{ item.location_district }}, {{ item.location_state }}</td>
                         <td>{{ item.climate_risk_score }} ({{ item.climate_risk_classification }})</td>
-                        <td><span class="status-badge status-reject">{{ item.final_decision }}</span></td>
+                        <td>
+                            {% if item.final_decision == 'Reject' %}
+                                <span class="status-badge status-reject">{{ item.final_decision }}</span>
+                            {% elif item.final_decision == 'Auto Approve' %}
+                                <span class="status-badge status-approve">{{ item.final_decision }}</span>
+                            {% else %}
+                                <span class="status-badge status-conditional">{{ item.final_decision }}</span>
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
             </table>

@@ -418,6 +418,25 @@ def dashboard(request):
     role = get_or_create_profile(request.user).role
     applications = ClimateCreditApplication.objects.all() if role in {UserProfile.ROLE_MANAGER, UserProfile.ROLE_AUDITOR} else ClimateCreditApplication.objects.filter(user=request.user)
 
+    # Ensure all applications have final_decision and early_warning_message populated
+    for app in applications:
+        # Regenerate decision if missing
+        if not app.final_decision or app.final_decision == "":
+            app.final_decision = decision_engine(
+                app.adjusted_credit_score,
+                app.climate_risk_classification,
+                app.loan_amount,
+                app.default_probability
+            )
+            app.save(update_fields=["final_decision"])
+        
+        # Regenerate early warning if missing
+        if app.early_warning_flag and (not app.early_warning_message or app.early_warning_message == ""):
+            warning_flag, warning_msg = early_warning(app.default_probability, app.climate_risk_score, app.esg_risk_score)
+            app.early_warning_flag = warning_flag
+            app.early_warning_message = warning_msg
+            app.save(update_fields=["early_warning_flag", "early_warning_message"])
+
     metrics = applications.aggregate(
         total=Count("id"),
         avg_risk=Avg("climate_risk_score"),
