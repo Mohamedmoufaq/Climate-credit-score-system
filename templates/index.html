@@ -3,41 +3,337 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Climate Credit Flask App</title>
+    <title>Climate Credit Loan Decision System</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f3f7fb; color: #111; margin: 0; padding: 0; }
-        .page { max-width: 720px; margin: 3rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,.08); }
-        h1 { margin-top: 0; }
-        label { display: block; margin: 1rem 0 0.5rem; font-weight: 600; }
-        input, textarea { width: 100%; padding: 0.85rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; }
-        button { margin-top: 1rem; padding: 0.95rem 1.4rem; border: none; border-radius: 8px; background: #2563eb; color: white; cursor: pointer; font-size: 1rem; }
-        .message { margin: 1rem 0; padding: 1rem 1.2rem; border-radius: 10px; }
-        .error { background: #fee2e2; color: #991b1b; }
-        .success { background: #d1fae5; color: #064e3b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: #111; 
+            min-height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 1rem;
+        }
+        .container { 
+            width: 100%; 
+            max-width: 700px; 
+        }
+        .card { 
+            background: white; 
+            border-radius: 16px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15); 
+            padding: 3rem; 
+        }
+        h1 { 
+            font-size: 2rem; 
+            margin-bottom: 0.5rem; 
+            color: #1a202c; 
+        }
+        .subtitle { 
+            font-size: 1rem; 
+            color: #718096; 
+            margin-bottom: 2rem; 
+        }
+        .form-group { 
+            margin-bottom: 1.5rem; 
+        }
+        label { 
+            display: block; 
+            font-weight: 600; 
+            margin-bottom: 0.75rem; 
+            color: #2d3748; 
+            font-size: 0.95rem; 
+        }
+        input[type="text"], 
+        input[type="number"] { 
+            width: 100%; 
+            padding: 0.95rem; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            font-family: inherit; 
+            transition: all 0.3s ease; 
+        }
+        input[type="text"]:focus, 
+        input[type="number"]:focus { 
+            outline: none; 
+            border-color: #667eea; 
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); 
+        }
+        button { 
+            width: 100%; 
+            padding: 1rem; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+        }
+        button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); 
+        }
+        button:active { 
+            transform: translateY(0); 
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .message-box { 
+            margin-bottom: 1.5rem; 
+            padding: 1rem 1.25rem; 
+            border-radius: 8px; 
+            font-size: 0.95rem; 
+            border-left: 4px solid;
+        }
+        .error { 
+            background-color: #fed7d7; 
+            color: #c53030; 
+            border-color: #c53030;
+        }
+        .result-box {
+            background-color: #f0f9ff;
+            color: #0c3a66;
+            border-color: #0284c7;
+            margin-bottom: 2rem;
+        }
+        .result-box h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #1a202c;
+        }
+        .decision-badge {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        .decision-badge.approve {
+            background-color: #dcfce7;
+            color: #166534;
+            border: 2px solid #22c55e;
+        }
+        .decision-badge.reject {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+        .decision-badge.conditional {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 2px solid #fbbf24;
+        }
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .detail-item {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .detail-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+        .detail-value {
+            font-size: 1.25rem;
+            color: #1e293b;
+            font-weight: 700;
+        }
+        .reason-text {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            color: #4b5563;
+        }
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 640px) {
+            .two-column, .details-grid {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="page">
-        <h1>Climate Credit Flask App</h1>
-        <p>This app is deployed with Flask and Gunicorn on Render.</p>
+    <div class="container">
+        <div class="card">
+            <h1>🏦 Loan Decision System</h1>
+            <p class="subtitle">AI-powered climate-aware credit assessment</p>
 
-        {% if error %}
-            <div class="message error">{{ error }}</div>
-        {% endif %}
+            {% if error %}
+                <div class="message-box error">
+                    <strong>❌ Error:</strong> {{ error }}
+                </div>
+            {% endif %}
 
-        {% if result %}
-            <div class="message success">{{ result }}</div>
-        {% endif %}
+            {% if result %}
+                <div class="message-box result-box">
+                    <h2>Application Decision</h2>
+                    <div class="decision-badge {{ result.color }}">
+                        {{ result.decision }}
+                    </div>
+                    
+                    <div class="reason-text">
+                        <strong>Decision Reason:</strong> {{ result.reason }}
+                    </div>
+                    
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Borrower Name</div>
+                            <div class="detail-value">{{ result.borrower_name }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Credit Score</div>
+                            <div class="detail-value">{{ result.credit_score }}/100</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Monthly Income</div>
+                            <div class="detail-value">₹{{ "%.0f"|format(result.income) }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Loan Amount</div>
+                            <div class="detail-value">₹{{ "%.0f"|format(result.loan_amount) }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Debt-to-Income Ratio</div>
+                            <div class="detail-value">{{ result.debt_ratio }}%</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Default Probability</div>
+                            <div class="detail-value">{{ result.default_probability }}%</div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
 
-        <form action="{{ url_for('submit') }}" method="post">
-            <label for="name">Your name</label>
-            <input type="text" id="name" name="name" value="{{ name or '' }}" placeholder="Enter your name" />
+            <form method="POST" action="/submit" onsubmit="return handleSubmit(event)">
+                <fieldset>
+                    <div class="form-group">
+                        <label for="borrower_name">Borrower Name <span style="color: #e53e3e;">*</span></label>
+                        <input 
+                            type="text" 
+                            id="borrower_name" 
+                            name="borrower_name" 
+                            value="{{ borrower_name or '' }}" 
+                            placeholder="Enter full name" 
+                            required
+                        />
+                    </div>
 
-            <label for="message">Message</label>
-            <textarea id="message" name="message" rows="4" placeholder="Enter your message">{{ message or '' }}</textarea>
+                    <div class="two-column">
+                        <div class="form-group">
+                            <label for="income">Monthly Income (₹) <span style="color: #e53e3e;">*</span></label>
+                            <input 
+                                type="number" 
+                                id="income" 
+                                name="income" 
+                                value="{{ income or '' }}" 
+                                placeholder="e.g., 50000" 
+                                step="0.01"
+                                min="0"
+                                required
+                            />
+                        </div>
 
-            <button type="submit">Send</button>
-        </form>
+                        <div class="form-group">
+                            <label for="loan_amount">Loan Amount (₹) <span style="color: #e53e3e;">*</span></label>
+                            <input 
+                                type="number" 
+                                id="loan_amount" 
+                                name="loan_amount" 
+                                value="{{ loan_amount or '' }}" 
+                                placeholder="e.g., 500000" 
+                                step="0.01"
+                                min="0"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="credit_history">Credit History Score (0-100)</label>
+                        <input 
+                            type="number" 
+                            id="credit_history" 
+                            name="credit_history" 
+                            value="50" 
+                            placeholder="Default: 50" 
+                            step="1"
+                            min="0"
+                            max="100"
+                        />
+                    </div>
+
+                    <button type="submit" id="submitBtn">📊 Get Loan Decision</button>
+                </fieldset>
+            </form>
+        </div>
     </div>
+
+    <script>
+        function handleSubmit(event) {
+            const submitBtn = document.getElementById('submitBtn');
+            const nameInput = document.getElementById('borrower_name');
+            const incomeInput = document.getElementById('income');
+            const loanInput = document.getElementById('loan_amount');
+            
+            // Validate name
+            if (!nameInput.value.trim()) {
+                event.preventDefault();
+                alert('Please enter borrower name');
+                return false;
+            }
+            
+            // Validate income
+            if (!incomeInput.value || parseFloat(incomeInput.value) <= 0) {
+                event.preventDefault();
+                alert('Please enter valid monthly income');
+                return false;
+            }
+            
+            // Validate loan amount
+            if (!loanInput.value || parseFloat(loanInput.value) <= 0) {
+                event.preventDefault();
+                alert('Please enter valid loan amount');
+                return false;
+            }
+            
+            // Visual feedback
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Processing...';
+            
+            return true;
+        }
+        
+        // Debug logs
+        console.log('Loan Decision System loaded');
+        console.log('Form action:', document.querySelector('form').action);
+    </script>
 </body>
 </html>
