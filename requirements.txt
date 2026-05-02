@@ -3,3 +3,4 @@ gunicorn==21.2.0
 requests==2.31.0
 numpy
 scikit-learn
+whitenoise>=6.0,<7
