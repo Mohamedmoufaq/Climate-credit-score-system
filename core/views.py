@@ -317,6 +317,13 @@ def esg_recommendation(esg_score):
     return "Standard ESG monitoring"
 
 
+def infer_credit_score_from_risk(rainfall, flood, cyclone, drought, loan_amount, property_value, property_risk_score):
+    climate_risk = (0.22 * rainfall) + (0.28 * flood) + (0.22 * cyclone) + (0.18 * drought)
+    ltv = loan_amount / max(property_value, 1)
+    score = 760 - (climate_risk * 0.35) - (property_risk_score * 0.45) - (ltv * 18)
+    return int(np.clip(round(score), 300, 900))
+
+
 def decision_engine(adjusted_credit_score, climate_level, loan_amount, default_probability):
     if climate_level in {ClimateCreditApplication.CLIMATE_HIGH, ClimateCreditApplication.CLIMATE_SEVERE}:
         return ClimateCreditApplication.DECISION_REJECT
@@ -324,22 +331,39 @@ def decision_engine(adjusted_credit_score, climate_level, loan_amount, default_p
     if default_probability > 50:
         return ClimateCreditApplication.DECISION_REJECT
 
-    # Thresholds adjusted for 0-100 credit score scale
-    if adjusted_credit_score >= 80 and loan_amount <= 3000000:
+    if adjusted_credit_score >= 750:
         return ClimateCreditApplication.DECISION_AUTO_APPROVE
 
-    if adjusted_credit_score >= 60:
+    if adjusted_credit_score >= 600:
         return ClimateCreditApplication.DECISION_CONDITIONAL
 
     return ClimateCreditApplication.DECISION_REJECT
 
 
-def early_warning(default_probability, climate_score, esg_score):
-    if default_probability >= 55 or climate_score >= 75:
-        return True, "Critical Alert: Immediate portfolio review required"
-    if default_probability >= 40 or esg_score >= 65:
-        return True, "Warning: Closely monitor repayment and climate events"
-    return False, ""
+def early_warning(default_probability, climate_score, esg_score, credit_score):
+    messages = []
+
+    if credit_score < 600:
+        messages.append("Low credit score – High risk")
+    elif credit_score < 750:
+        messages.append("Moderate score – Medium risk")
+    else:
+        messages.append("Good score – Low risk")
+
+    if default_probability >= 55:
+        messages.append("Critical Alert: Immediate portfolio review required")
+    elif default_probability >= 40:
+        messages.append("Warning: Closely monitor repayment and climate events")
+
+    if climate_score >= 75:
+        messages.append("High climate risk detected")
+    if esg_score >= 65:
+        messages.append("ESG compliance concerns")
+
+    warning_message = " | ".join(messages) if messages else ""
+    has_warning = credit_score < 750 or default_probability >= 40 or climate_score >= 75 or esg_score >= 65
+
+    return has_warning, warning_message
 
 
 def register_view(request):
@@ -532,7 +556,8 @@ def apply_loan(request):
 
         try:
             income = float(request.POST.get("income", 0))
-            base_credit_score = int(request.POST.get("credit_score", 0))
+            raw_credit = request.POST.get("credit_score", "").strip()
+            base_credit_score = int(raw_credit) if raw_credit.isdigit() else 0
             loan_amount = float(request.POST.get("loan_amount", 0))
             property_value = float(request.POST.get("property_value", 0))
             tenure_months = int(request.POST.get("tenure_months", 0))
@@ -606,6 +631,9 @@ def apply_loan(request):
         rainfall, flood, cyclone, drought = aggregate_climate_data(location, income, loan_amount)
         property_risk_score = property_risk(property_type, property_value, loan_amount, flood, cyclone)
 
+        if base_credit_score < 300:
+            base_credit_score = infer_credit_score_from_risk(rainfall, flood, cyclone, drought, loan_amount, property_value, property_risk_score)
+
         climate_score, climate_level, default_probability, model_confidence = climate_analytics(
             rainfall,
             flood,
@@ -632,7 +660,7 @@ def apply_loan(request):
         esg_reco = esg_recommendation(esg_score)
 
         decision = decision_engine(adjusted_credit_score, climate_level, loan_amount, default_probability)
-        warning_flag, warning_msg = early_warning(default_probability, climate_score, esg_score)
+        warning_flag, warning_msg = early_warning(default_probability, climate_score, esg_score, adjusted_credit_score)
 
         rationale = (
             f"AI+Climate integrated scoring={climate_score} ({climate_level}), default probability={default_probability}%, "
@@ -774,6 +802,10 @@ def realtime_decision_api(request):
     )
 
     property_risk_score = property_risk(property_type, property_value, loan_amount, flood, cyclone)
+
+    if base_credit_score < 300:
+        base_credit_score = infer_credit_score_from_risk(rainfall, flood, cyclone, drought, loan_amount, property_value, property_risk_score)
+
     climate_score, climate_level, default_probability, model_confidence = climate_analytics(
         rainfall, flood, cyclone, drought, income, loan_amount, base_credit_score, property_value
     )
@@ -782,6 +814,7 @@ def realtime_decision_api(request):
     esg_credit = esg_credit_score(ai_credit, esg_score)
     interest_rate, collateral_ratio, suggested_tenure = risk_based_pricing(ai_credit, climate_score, default_probability, tenure_months)
     decision = decision_engine(ai_credit, climate_level, loan_amount, default_probability)
+    warning_flag, warning_msg = early_warning(default_probability, climate_score, esg_score, ai_credit)
 
     return JsonResponse(
         {
@@ -795,6 +828,8 @@ def realtime_decision_api(request):
             "collateral_ratio": round(collateral_ratio, 2),
             "suggested_tenure": suggested_tenure,
             "decision": decision,
+            "predicted_credit_score": base_credit_score,
+            "early_warning_message": warning_msg,
             "model_confidence": round(model_confidence, 2),
             "model_algorithm": "RandomForestRegressor (ML)",
         }
@@ -838,6 +873,35 @@ def override_decision(request, app_id):
         decision=override,
         details="Final decision reconfirmed after manager override.",
     )
+
+    return redirect("dashboard")
+
+
+@login_required
+@role_required({UserProfile.ROLE_MANAGER})
+@require_http_methods(["POST"])
+def delete_application(request, app_id):
+    application = get_object_or_404(ClimateCreditApplication, id=app_id)
+
+    # Only managers can delete applications
+    if get_or_create_profile(request.user).role != UserProfile.ROLE_MANAGER:
+        return redirect("dashboard")
+
+    # Create audit log before deletion
+    AuditLog.objects.create(
+        application=application,
+        user=request.user,
+        action=AuditLog.ACTION_DELETE,
+        decision=application.final_decision,
+        risk_factors=(
+            f"climate_score={application.climate_risk_score}, adjusted_credit={application.adjusted_credit_score}, "
+            f"esg={application.esg_risk_score}, default={application.default_probability}"
+        ),
+        details=f"Application deleted by manager. Borrower: {application.borrower_name}, ID: {application.borrower_id}",
+    )
+
+    # Delete the application
+    application.delete()
 
     return redirect("dashboard")
 

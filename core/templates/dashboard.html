@@ -123,9 +123,10 @@
                 <th>ESG Lending Support</th>
                 <th>AI Model</th>
                 <th>Confidence</th>
+                <th>Early Warning</th>
                 <th>Decision</th>
                 <th>Rationale</th>
-                {% if role == 'manager' %}<th>Manual Override</th>{% endif %}
+                {% if role == 'manager' %}<th>Manual Override</th><th>Actions</th>{% endif %}
             </tr>
             {% for app in applications %}
                 <tr>
@@ -148,6 +149,15 @@
                     <td>{{ app.model_algorithm }}</td>
                     <td>{{ app.model_confidence }}%</td>
                     <td>
+                        {% if app.early_warning_message %}
+                            <span class="status-badge {% if 'High risk' in app.early_warning_message %}status-reject{% elif 'Medium risk' in app.early_warning_message %}status-conditional{% else %}status-approve{% endif %}">
+                                {{ app.early_warning_message }}
+                            </span>
+                        {% else %}
+                            <span class="muted">No alerts</span>
+                        {% endif %}
+                    </td>
+                    <td>
                         {% if app.final_decision == 'Reject' %}
                             <span class="status-badge status-reject">{{ app.final_decision }}</span>
                         {% elif app.final_decision == 'Auto Approve' %}
@@ -169,10 +179,16 @@
                             <button type="submit" class="small-btn">Apply</button>
                         </form>
                     </td>
+                    <td>
+                        <form method="POST" action="{% url 'delete_application' app.id %}" onsubmit="return confirm('Are you sure you want to delete this application? This action cannot be undone.');">
+                            {% csrf_token %}
+                            <button type="submit" class="small-btn" style="background-color: #dc2626; color: white;">Delete</button>
+                        </form>
+                    </td>
                     {% endif %}
                 </tr>
             {% empty %}
-                <tr><td colspan="21">No applications yet.</td></tr>
+                <tr><td colspan="22">No applications yet.</td></tr>
             {% endfor %}
         </table>
     </div>

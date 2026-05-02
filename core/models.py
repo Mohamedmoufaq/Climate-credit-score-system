@@ -139,11 +139,13 @@ class AuditLog(models.Model):
     ACTION_CREATE = "create"
     ACTION_OVERRIDE = "override"
     ACTION_FINAL_CONFIRM = "final_confirm"
+    ACTION_DELETE = "delete"
 
     ACTION_CHOICES = [
         (ACTION_CREATE, "Create Application"),
         (ACTION_OVERRIDE, "Manager Override"),
         (ACTION_FINAL_CONFIRM, "Final Decision Confirmation"),
+        (ACTION_DELETE, "Delete Application"),
     ]
 
     application = models.ForeignKey(ClimateCreditApplication, on_delete=models.CASCADE, related_name="audit_logs")

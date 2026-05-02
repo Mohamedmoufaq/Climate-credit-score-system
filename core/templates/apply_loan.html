@@ -92,8 +92,9 @@
             </div>
 
             <div class="form-group">
-                <label>Base Credit Score</label>
-                <input type="number" min="300" max="900" name="credit_score" id="creditScore" required>
+                <label>Borrower Base Credit Score (300-900)</label>
+                <input type="number" min="300" max="900" name="credit_score" id="creditScore" placeholder="Leave empty to auto-predict" >
+                <small class="muted">If you do not know the score, the system will infer a score automatically from climate, property, and loan risk.</small>
             </div>
 
             <div class="form-group">
@@ -301,6 +302,8 @@ document.getElementById('previewDecision').addEventListener('click', async () =>
     document.getElementById('pRate').textContent = `${data.interest_rate}%`;
     document.getElementById('pCollateral').textContent = `${data.collateral_ratio}%`;
     document.getElementById('pTenure').textContent = `${data.suggested_tenure} months`;
+    document.getElementById('pPredictedCredit').textContent = data.predicted_credit_score || '-';
+    document.getElementById('pWarning').textContent = data.early_warning_message || 'No alerts';
     document.getElementById('pConfidence').textContent = `${data.model_confidence}%`;
     document.getElementById('pAlgorithm').textContent = data.model_algorithm;
 
