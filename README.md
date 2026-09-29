@@ -28,7 +28,7 @@ python manage.py runserver
 ✅ **Dynamic Location Search** — Nominatim API for all India locations  
 ✅ **Real-Time Decision Engine** — Auto Approve / Conditional / Reject logic  
 ✅ **ESG-Aligned Lending** — Environmental, Social, Governance scoring  
-✅ **Geospatial Visualization** — CARTO Leaflet.js risk mapping  
+✅ **Geospatial Visualization** — OpenStreetMap Leaflet.js risk mapping  
 ✅ **Role-Based Access** — Officer / Manager / Auditor dashboards  
 
 ## 📊 Decision Logic
@@ -125,7 +125,7 @@ climate/
 - Check database for orphaned records: `python manage.py shell`
 
 **"Map showing 403 Error"**
-- Using CARTO tiles (no authentication required)
+- Uses standard OpenStreetMap tiles (no API key required)
 - Check browser console for CORS issues
 
 **"Render deployment fails"**

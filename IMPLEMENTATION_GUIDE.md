@@ -26,15 +26,14 @@ python manage.py runserver
 
 ## ✨ NEW FEATURES EXPLAINED
 
-### A. CARTO Map (No 403 Errors)
+### A. OpenStreetMap Tiles
 **What Changed:**
-- Map now uses CARTO Light tiles instead of OpenStreetMap
-- No more "403 Access Blocked" errors
-- Tiles load reliably everywhere (including Render)
+- Map uses the standard OpenStreetMap tile service.
+- Leaflet displays the required OpenStreetMap contributor attribution.
 
 **Technical Details:**
-- Provider: `https://basemaps.cartocdn.com/light_all/`
-- Attribution: Automatically includes © OpenStreetMap & © CARTO
+- Tile URL: `https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`
+- Attribution: © OpenStreetMap contributors, linked to the copyright page
 - Zoom levels: 0-19
 
 ---
@@ -239,7 +238,7 @@ http://localhost:8000/ → register/login
 http://localhost:8000/demo-access/
 
 # 4. Test map
-- Dashboard should load with CARTO map (no 403 error)
+- Dashboard should load with OpenStreetMap tiles
 - Click marker → Should zoom smoothly
 
 # 5. Test dynamic location
@@ -267,7 +266,7 @@ http://localhost:8000/demo-access/
 ### Modified Files:
 
 1. **[core/templates/dashboard.html]()**
-   - Replaced OpenStreetMap with CARTO
+   - Configured the standard OpenStreetMap tile URL and attribution
    - Enhanced map markers with colors, sizes, popups
    - Added flyTo zoom animation
 
@@ -313,7 +312,7 @@ http://localhost:8000/demo-access/
 ### Issue: Map shows blank
 **Solution:** 
 - Check browser console for errors
-- Verify CARTO tiles URL is accessible
+- Verify the OpenStreetMap tile URL is accessible
 - Clear browser cache and reload
 
 ### Issue: Nominatim API slow/timeout
@@ -346,7 +345,7 @@ python manage.py collectstatic --noinput
 
 ### Maps & Geolocation:
 - [Leaflet.js Docs](https://leafletjs.com/)
-- [CARTO Basemaps](https://carto.com/basemaps/)
+- [OpenStreetMap tile usage policy](https://operations.osmfoundation.org/policies/tiles/)
 - [Nominatim API](https://nominatim.org/release-docs/latest/api/Overview/)
 
 ### Django & Deployment:

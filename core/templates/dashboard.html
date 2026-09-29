@@ -199,10 +199,10 @@
 const mapPoints = {{ map_points|safe }};
 const map = L.map('riskMap').setView([22.5, 79.0], 4);
 
-// CARTO tile layer (stable, no 403 errors)
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
-    subdomains: 'abcd',
+// Standard OpenStreetMap - Direct free layer, zero key required
+// 100% Free CDN - No API key needed & No 403 block on Localhost/Render
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
     maxZoom: 19
 }).addTo(map);
 

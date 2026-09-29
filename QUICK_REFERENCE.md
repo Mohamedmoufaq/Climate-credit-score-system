@@ -3,7 +3,7 @@
 ## ⚡ IMMEDIATE FIXES PROVIDED
 
 ### 1️⃣ MAP 403 ERROR
-**Fixed:** OpenStreetMap → CARTO tiles  
+**Configured:** Standard OpenStreetMap tiles and attribution  
 **Status:** ✅ No more 403 errors  
 **File:** `core/templates/dashboard.html`
 
@@ -74,7 +74,7 @@ git push origin main
 
 | Feature | Before | After | Status |
 |---------|--------|-------|--------|
-| Map Tiles | 403 Error | CARTO Perfect | ✅ |
+| Map Tiles | Provider configuration | OpenStreetMap tiles | ✅ |
 | Dashboard | Errors | Clean Load | ✅ |
 | Custom Locations | Manual lat/lon | Auto Nominatim | ✅ |
 | AI Model | No confidence | Shows % + algorithm | ✅ |
@@ -130,13 +130,13 @@ git push origin main
 
 ### No API Keys Needed! ✨
 - Uses free Nominatim (OpenStreetMap)
-- Uses free CARTO tiles
+- Uses standard OpenStreetMap tiles
 - SQLite included locally
 
 ### For Production:
 - Use PostgreSQL on Render
 - Nominatim API: No key required
-- CARTO: Free tier available
+- OpenStreetMap tiles: No API key required
 
 ---
 
@@ -188,7 +188,7 @@ Auto-Login:
 
 | Metric | Status |
 |--------|--------|
-| Map Load Time | <1s (CARTO CDN) |
+| Map Load Time | <1s (network dependent) |
 | Location Lookup | <2s (Nominatim API) |
 | Dashboard Render | <300ms |
 | Decision API | <500ms (ML inference) |

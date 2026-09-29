@@ -6,13 +6,12 @@
 **Problem:** OpenStreetMap tiles returned "403 Access Blocked - Referer required"
 
 **Solution Applied:**
-- Replaced OpenStreetMap with **CARTO Light tile layer** (no referer requirements)
-- Updated [dashboard.html](core/templates/dashboard.html#L127)
+- Use the standard OpenStreetMap tile layer and its required attribution.
+- Updated [dashboard.html](core/templates/dashboard.html)
 ```javascript
-// CARTO Light tile layer (no 403 error, reliable)
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-    subdomains: 'abcd',
+// Standard OpenStreetMap tile layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19
 }).addTo(map);
 ```
@@ -245,7 +244,7 @@ gunicorn==21.0.0
 
 ### 1. Test Map (No 403 Error):
 - Go to Dashboard
-- Check if Leaflet map loads with CARTO tiles
+- Check if Leaflet map loads with OpenStreetMap tiles
 - Click any marker → Should smoothly zoom with flyTo
 
 ### 2. Test Dynamic Location:
@@ -270,7 +269,7 @@ gunicorn==21.0.0
 
 ## 📝 FILES MODIFIED
 
-1. ✅ [dashboard.html](core/templates/dashboard.html) - Map CARTO tiles + improved markers
+1. ✅ [dashboard.html](core/templates/dashboard.html) - OpenStreetMap tiles + improved markers
 2. ✅ [apply_loan.html](core/templates/apply_loan.html) - Added confidence display
 3. ✅ [views.py](core/views.py) - Nominatim API + improved responses
 4. ✅ [urls.py](core/urls.py) - New `/api/fetch-location/` endpoint

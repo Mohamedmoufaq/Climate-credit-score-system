@@ -12,7 +12,7 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "change-me-in-render")
 # Decision thresholds
 APPROVE_SCORE_THRESHOLD = 80
 CONDITIONAL_SCORE_THRESHOLD = 60
-REJECT_SCORE_THRESHOLD = 60
+REJECT_SCORE_THRESHOLD = 40
 
 def calculate_credit_score(income, loan_amount, credit_history=50):
     """Calculate credit score based on income, loan amount, and history"""

@@ -13,7 +13,7 @@
 - [ ] "New Application" button visible in top-right
 - [ ] Navigation bar properly styled
 - [ ] KPI cards display with values
-- [ ] Map shows with CARTO tiles (no 403 error)
+- [ ] Map shows with OpenStreetMap tiles and contributor attribution
 - [ ] All panels have proper spacing
 
 ### Part 3: Navigation
@@ -200,7 +200,7 @@
 | Form won't submit | Check all fields have values, esp. location |
 | Styles look broken | Clear browser cache (`Ctrl+Shift+Delete`) |
 | Dashboard doesn't load | Try `/demo-access/` URL first |
-| Map shows blank | Verify CARTO tiles URL works |
+| Map shows blank | Verify the OpenStreetMap tiles URL is accessible |
 
 ---
 
